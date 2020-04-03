@@ -6817,6 +6817,140 @@ function homepageMonitorr(timeout){
     if(typeof timeouts[timeoutTitle] !== 'undefined'){ clearTimeout(timeouts[timeoutTitle]); }
     timeouts[timeoutTitle] = setTimeout(function(){ homepageMonitorr(timeout); }, timeout);
 }
+function buildWatchlistItem(array){
+    var movies = array['watchlist']['movies'];
+    var tv = array['watchlist']['tv'];
+    var all = movies.concat(tv);
+    all.sort((a, b) => (parseInt(a['added']) > parseInt(b['added'])) ? -1 : 1);
+    
+    var buildItem = function(item) {
+        var card = `
+        <div class="watchlist-item d-inline-block mr-2 text-center mouse" data-toggle="modal" data-target="#watchlist`+item.title.replace(/\W+/g,"")+item.added+`Modal">
+            <img src="/plugins/images/cache/no-list.png">
+        </div>
+
+        <div class="modal fade watchlist-modal" id="watchlist`+item.title.replace(/\W+/g,"")+item.added+`Modal" tabindex="-1" role="dialog" aria-labelledby="watchlist`+item.title.replace(/\W+/g,"")+item.added+`ModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content p-4">
+                    <div class="modal-body">
+                        <div class="row d-flex align-items-center">
+                            <div class="col-md-4 col-sm-12 text-center">
+                                <img src="/plugins/images/cache/no-list.png">
+                            </div>
+                            <div class="col-md-8 col-sm-12 text-center">
+                                <h2>`+item.title+`</h2>
+                                <p class="mb-0">Added to watchlist: `+item.addedReadable+`</p>
+                                <div class="my-3">
+                                    <button class="btn btn-danger">Remove from Watchlist</button>
+                                    <button class="btn btn-info">Open in Plex</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        `;
+        return card;
+    }
+    var cards = '<div class="watchlist-items py">';
+    all.forEach(e => {
+        cards += buildItem(e);
+    });
+    cards += '</div>';
+
+
+    return cards;
+}
+function buildWatchlist(array){
+    if(array === false){ return ''; }
+    var html = `
+    <style>
+        .watchlist-header {
+            padding: 19px 20px 11px 20px;
+        }
+
+        .watchlist-header .watchlist-header-title {
+            font-weight: 500;
+            font-size: 16px;
+            color: white;
+        }
+
+        .watchlist-item {
+            height: 225px;
+            width: 150px;
+        }
+
+        @media (max-width: 992px) {
+            .watchlist-modal .row {
+                display: block !important;
+            }
+        }
+
+        .watchlist-item img {
+            height: 225px;
+            width: 150px;
+            display: block;
+        }
+
+        .watchlist-modal img {
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        .watchlist-item .elip.recent-title:hover {
+            display: block;
+        }
+    </style>
+
+    <div id="allWatchlist">
+		<div class="el-element-overlay row">
+            <div class="col-md-12">
+                <div class="watchlist-header bg-info">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-inline-block pull-left">
+                            <span class="watchlist-header-title"><img class="homepageImageTitle mr-2" src="/plugins/images/tabs/watcher.png">Watchlist</span>
+                        </div>
+                        <div class="d-inline-block pull-right">
+                            <button class="btn btn-primary">Next</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="clearfix"></div>
+            <div class="col-md-12">
+                <div class="watchlistCards">
+                    `+buildWatchlistItem(array)+`
+                </div>
+            </div>
+		</div>
+    </div>
+    <div class="clearfix"></div>
+    `;
+    return (array) ? html : '';
+}
+function homepageWatchlist(timeout){
+    var timeout = (typeof timeout !== 'undefined') ? timeout : activeInfo.settings.homepage.refresh.homepagePiholeRefresh;
+    organizrAPI('POST','api/?v1/homepage/connect',{action:'getWatchlist'}).success(function(data) {
+        try {
+            var response = JSON.parse(data);
+        }catch(e) {
+            console.log(e + ' error: ' + data);
+            orgErrorAlert('<h4>' + e + '</h4>' + formatDebug(data));
+            return false;
+        }
+        document.getElementById('homepageOrderWatchlist').innerHTML = '';
+        if(response.data !== null){
+            buildWatchlist(response.data)
+            $('#homepageOrderWatchlist').html(buildWatchlist(response.data));
+        }
+    }).fail(function(xhr) {
+        console.error("Organizr Function: API Connection Failed");
+    });
+    var timeoutTitle = 'Watchlist-Homepage';
+    if(typeof timeouts[timeoutTitle] !== 'undefined'){ clearTimeout(timeouts[timeoutTitle]); }
+    timeouts[timeoutTitle] = setTimeout(function(){ homepageWatchlist(timeout); }, timeout);
+}
 // Thanks Swifty!
 function PopupCenter(url, title, w, h) {
     // Fixes dual-screen position                         Most browsers      Firefox

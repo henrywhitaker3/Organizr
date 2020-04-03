@@ -25,6 +25,7 @@ function homepageOrder()
 		"homepageOrdertautulli" => $GLOBALS['homepageOrdertautulli'],
 		"homepageOrderPihole" => $GLOBALS['homepageOrderPihole'],
 		"homepageOrderMonitorr" => $GLOBALS['homepageOrderMonitorr'],
+		"homepageOrderWatchlist" => $GLOBALS['homepageOrderWatchlist'],
 	);
 	asort($homepageOrder);
 	return $homepageOrder;
@@ -365,6 +366,18 @@ function buildHomepageItem($homepageItem)
 				<script>
 				// Monitorr
 				homepageMonitorr("' . $GLOBALS['homepageMonitorrRefresh'] . '");
+				// End Monitorr
+				</script>
+				';
+			}
+			break;
+		case 'homepageOrderWatchlist':
+			if ($GLOBALS['homepageWatchlistEnabled']) {
+				$item .= '<div class="white-box"><h2 class="text-center" lang="en">Loading Watchlist...</h2></div>';
+				$item .= '
+				<script>
+				// Monitorr
+				homepageWatchlist("' . $GLOBALS['homepageWatchlistRefresh'] . '");
 				// End Monitorr
 				</script>
 				';
@@ -2778,6 +2791,31 @@ function getHomepageList()
 				),
 			)
 		),
+		array(
+			'name' => 'Watchlist',
+			'enabled' => true,
+			'image' => 'plugins/images/tabs/watcher.png',
+			'category' => 'Homepage',
+			'settings' => array(
+				'Enable' => array(
+					array(
+						'type' => 'switch',
+						'name' => 'homepageWatchlistEnabled',
+						'label' => 'Enable',
+						'value' => $GLOBALS['homepageWatchlistEnabled']
+					),
+				),
+				'Connection' => array(
+					array(
+						'type' => 'select',
+						'name' => 'homepageWatchlistRefresh',
+						'label' => 'Refresh Seconds',
+						'value' => $GLOBALS['homepageWatchlistRefresh'],
+						'options' => optionTime()
+					),
+				),
+			)
+		),
 	);
 }
 
@@ -2921,6 +2959,13 @@ function buildHomepageSettings()
 				$class = 'bg-info';
 				$image = 'plugins/images/tabs/monitorr.png';
 				if (!$GLOBALS['homepageMonitorrEnabled']) {
+					$class .= ' faded';
+				}
+				break;
+			case 'homepageOrderWatchlist':
+				$class = 'bg-info';
+				$image = 'plugins/images/tabs/watcher.png';
+				if (!$GLOBALS['homepageWatchlistEnabled']) {
 					$class .= ' faded';
 				}
 				break;

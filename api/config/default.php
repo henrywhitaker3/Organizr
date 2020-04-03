@@ -165,6 +165,7 @@ return array(
 	'homepageOrderPihole' => '20',
 	'homepageOrdertautulli' => '21',
 	'homepageOrderMonitorr' => '22',
+	'homepageOrderWatchlist' => '23',
 	'homepageShowStreamNames' => false,
 	'homepageShowStreamNamesAuth' => '1',
 	'homepageStreamRefresh' => '60000',
@@ -295,4 +296,20 @@ return array(
 	'monitorrHeaderToggle' => true,
 	'monitorrHeader' => 'Monitorr',
 	'monitorrCompact' => false,
+	'homepageWatchlistEnabled' => false,
+	'homepageWatchlistRefresh' => '60000',
+	'homepageMonitorrAuth' => '4',
+	'homepageWatchlistData' => [], 
+	/* Sample of setup array: 
+		[ 
+			'userID' => [
+				[
+					'title' => 'Title',
+					'link' => 'http://<plex tab>/link',
+					'poster' => '/path/to/poster.png',
+					'added' => 'datetime'
+				]
+			]
+		]
+	*/
 );

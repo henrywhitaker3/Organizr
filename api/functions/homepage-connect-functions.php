@@ -68,6 +68,9 @@ function homepageConnect($array)
 		case 'getMonitorr':
 			return getMonitorr();
 			break;
+		case 'getWatchlist':
+			return getWatchlist();
+			break;
 		default:
 			# code...
 			break;
@@ -2599,6 +2602,63 @@ function getMonitorr()
 		} catch (Requests_Exception $e) {
 			writeLog('error', 'Monitorr Connect Function - Error: ' . $e->getMessage(), 'SYSTEM');
 		};
+		$api = isset($api) ? $api : false;
+		return $api;
+	}
+}
+
+function getWatchlist()
+{
+	if ($GLOBALS['homepageWatchlistEnabled'] && isset($GLOBALS['organizrUser'])) {
+		$api = [];
+		
+		$data = $GLOBALS['homepageWatchlistData'];
+		$user = $GLOBALS['organizrUser'];
+		$watchlist = $data[$user['userID']];
+		
+		$api['watchlist'] = [
+			'movies' => [
+				[
+					'title' => 'Lion King',
+					'poster' => '',
+					'url' => '',
+					'added' => $time = time() - 15,
+					'addedReadable' => date( "Y-m-d H:i", $time)
+				],
+				[
+					'title' => 'Spies in Disguise',
+					'poster' => '',
+					'url' => '',
+					'added' => $time = time(),
+					'addedReadable' => date( "Y-m-d H:i", $time)
+				],
+			],
+			'tv' => [
+				[
+					'title' => 'Killing Eve',
+					'poster' => '',
+					'url' => '',
+					'added' => $time = time() + 4,
+					'addedReadable' => date( "Y-m-d H:i", $time)
+				],
+				[
+					'title' => 'Noughts + Crosses',
+					'poster' => '',
+					'url' => '',
+					'added' => $time = time() - 150,
+					'addedReadable' => date( "Y-m-d H:i", $time)
+				],
+			],
+		];
+
+		// if(isset($data[])) {
+
+		// }
+
+		$api['options'] = [
+			
+		];
+
 		$api = isset($api) ? $api : false;
 		return $api;
 	}
