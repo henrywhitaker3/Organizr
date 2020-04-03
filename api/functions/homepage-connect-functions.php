@@ -71,6 +71,9 @@ function homepageConnect($array)
 		case 'getWatchlist':
 			return getWatchlist();
 			break;
+		case 'addWatchlist':
+			return addToWatchlist();
+			break;
 		default:
 			# code...
 			break;
@@ -2607,54 +2610,64 @@ function getMonitorr()
 	}
 }
 
+function addToWatchlist()
+{
+	if ($GLOBALS['homepageWatchlistEnabled'] && $GLOBALS['organizrUser']['userID'] != null && isset($_POST['data']['item'])) {
+		$api = [];
+
+		// $item = json_decode($_POST['data']['item']);
+		$item = $_POST['data']['item'];
+
+		$config = configLazy();
+		$allWatchlists = $config['watchlistData'];
+		$user = $GLOBALS['organizrUser'];
+		$data = $allWatchlists[$user['username']];
+
+		switch($item['type']) {
+			case 'movie':
+				array_push($data['movies'], $item);
+				break;
+			case 'tv':
+				array_push($data['tv'], $item);
+				break;
+		}
+		
+		$allWatchlists[$user['username']] = $data;
+		$config['watchlistData'] = $allWatchlists;
+		$api['configToUpdate'] = $config;
+		updateConfig($config, configLazy());
+
+		$api['watchlist'] = $data;
+		$api['user'] = $GLOBALS['organizrUser'];
+
+		return $api;
+	}
+}
+
 function getWatchlist()
 {
-	if ($GLOBALS['homepageWatchlistEnabled'] && isset($GLOBALS['organizrUser'])) {
+	if ($GLOBALS['homepageWatchlistEnabled'] && $GLOBALS['organizrUser']['username'] != null) {
 		$api = [];
 		
-		$data = $GLOBALS['homepageWatchlistData'];
+		$data = $GLOBALS['watchlistData'];
 		$user = $GLOBALS['organizrUser'];
-		$watchlist = $data[$user['userID']];
+
+		if(!isset($data[$user['username']])) {
+			$watchlist = [
+				'movies' => [],
+				'tv' => [],
+			];
+			$data[$GLOBALS['organizrUser']['username']] = $watchlist;
+			$config = configLazy();
+			$config['watchlistData'] = $data;
+			updateConfig($config);
+		} else {
+			$watchlist = $data[$user['username']];
+			
+		}
+
+		$api['watchlist'] = $watchlist;
 		
-		$api['watchlist'] = [
-			'movies' => [
-				[
-					'title' => 'Lion King',
-					'poster' => '',
-					'url' => '',
-					'added' => $time = time() - 15,
-					'addedReadable' => date( "Y-m-d H:i", $time)
-				],
-				[
-					'title' => 'Spies in Disguise',
-					'poster' => '',
-					'url' => '',
-					'added' => $time = time(),
-					'addedReadable' => date( "Y-m-d H:i", $time)
-				],
-			],
-			'tv' => [
-				[
-					'title' => 'Killing Eve',
-					'poster' => '',
-					'url' => '',
-					'added' => $time = time() + 4,
-					'addedReadable' => date( "Y-m-d H:i", $time)
-				],
-				[
-					'title' => 'Noughts + Crosses',
-					'poster' => '',
-					'url' => '',
-					'added' => $time = time() - 150,
-					'addedReadable' => date( "Y-m-d H:i", $time)
-				],
-			],
-		];
-
-		// if(isset($data[])) {
-
-		// }
-
 		$api['options'] = [
 			
 		];

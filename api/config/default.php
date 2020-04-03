@@ -298,18 +298,5 @@ return array(
 	'monitorrCompact' => false,
 	'homepageWatchlistEnabled' => false,
 	'homepageWatchlistRefresh' => '60000',
-	'homepageMonitorrAuth' => '4',
-	'homepageWatchlistData' => [], 
-	/* Sample of setup array: 
-		[ 
-			'userID' => [
-				[
-					'title' => 'Title',
-					'link' => 'http://<plex tab>/link',
-					'poster' => '/path/to/poster.png',
-					'added' => 'datetime'
-				]
-			]
-		]
-	*/
+	'watchlistData' => [],
 );

@@ -6817,6 +6817,62 @@ function homepageMonitorr(timeout){
     if(typeof timeouts[timeoutTitle] !== 'undefined'){ clearTimeout(timeouts[timeoutTitle]); }
     timeouts[timeoutTitle] = setTimeout(function(){ homepageMonitorr(timeout); }, timeout);
 }
+function addToWatchlist(title, image, type, id){
+    var item = {
+        "title": title,
+        "image": image,
+        "type": type,
+        "id": id,
+    };
+    organizrAPI('POST','api/?v1/homepage/connect',{action:'addWatchlist', item: item}).success(function(data) {
+        try {
+            var response = JSON.parse(data);
+            console.log(response);
+        }catch(e) {
+            console.log(e + ' error: ' + data);
+            orgErrorAlert('<h4>' + e + '</h4>' + formatDebug(data));
+            return false;
+        }
+        if(response.data !== null){
+            homepageWatchlist();
+        }
+    }).fail(function(xhr) {
+        console.error("Organizr Function: API Connection Failed");
+    });
+}
+function watchlistSearch(query){
+    organizrAPI('POST','api/?v1/homepage/connect',{action:'getPlexSearch', query: query}).success(function(data) {
+        try {
+            var response = JSON.parse(data);
+        }catch(e) {
+            console.log(e + ' error: ' + data);
+            orgErrorAlert('<h4>' + e + '</h4>' + formatDebug(data));
+            return false;
+        }
+        var searchResult = function(item) {
+            var html = `
+            <div class="watchlist-search-result text-center d-inline-block px-3">
+                <img src="`+item.imageURL+`" />
+                <p class="mb-1 elip">`+item.title+`</p>
+                <button class="btn btn-info mb-2" onclick="addToWatchlist('`+item.title+`', '`+item.imageURL+`', '`+item.type+`', '`+item.metadataKey+`')">Add to list</button>
+            </div>
+            `;
+            return html;
+        }
+        if(response.data !== null){
+            var results = '<div class="row text-center">';
+            response.data.content.forEach(e => {
+                results += '<div class="col-lg-4 col-md-6 col-sm-12">';
+                results += searchResult(e);
+                results += '</div>';
+            });
+            results += '</div>';
+            $('#watchlistSearchResults').html(results);
+        }
+    }).fail(function(xhr) {
+        console.error("Organizr Function: API Connection Failed");
+    });
+}
 function buildWatchlistItem(array){
     var movies = array['watchlist']['movies'];
     var tv = array['watchlist']['tv'];
@@ -6825,7 +6881,7 @@ function buildWatchlistItem(array){
     
     var buildItem = function(item) {
         var card = `
-        <div class="watchlist-item d-inline-block mr-2 text-center mouse" data-toggle="modal" data-target="#watchlist`+item.title.replace(/\W+/g,"")+item.added+`Modal">
+        <div class="watchlist-item d-inline-block mr-3 text-center mouse" data-toggle="modal" data-target="#watchlist`+item.title.replace(/\W+/g,"")+item.added+`Modal">
             <img src="/plugins/images/cache/no-list.png">
         </div>
 
@@ -6876,6 +6932,18 @@ function buildWatchlist(array){
             color: white;
         }
 
+        .watchlist-header .pull-right i {
+            font-size: 22px;
+            color: white;
+        }
+
+        .watchlist-items {
+            height: 245px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            white-space: nowrap;
+        }
+
         .watchlist-item {
             height: 225px;
             width: 150px;
@@ -6898,8 +6966,8 @@ function buildWatchlist(array){
             max-height: 100%;
         }
 
-        .watchlist-item .elip.recent-title:hover {
-            display: block;
+        .watchlist-search-result img {
+            height: 325px;
         }
     </style>
 
@@ -6911,8 +6979,8 @@ function buildWatchlist(array){
                         <div class="d-inline-block pull-left">
                             <span class="watchlist-header-title"><img class="homepageImageTitle mr-2" src="/plugins/images/tabs/watcher.png">Watchlist</span>
                         </div>
-                        <div class="d-inline-block pull-right">
-                            <button class="btn btn-primary">Next</button>
+                        <div class="d-inline-block pull-right" data-toggle="modal" data-target="#watchlistSearchModal">
+                            <i class="fa fa-search mouse" aria-hidden="true"></i>
                         </div>
                     </div>
                 </div>
@@ -6926,11 +6994,29 @@ function buildWatchlist(array){
 		</div>
     </div>
     <div class="clearfix"></div>
+
+    <div class="modal fade watchlist-modal" id="watchlistSearchModal" tabindex="-1" role="dialog" aria-labelledby="watchlistSearchModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content p-4">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-sm-12 text-center">
+                                <input type="text" id="watchlistSearchInput" class="form-control inline-focus" placeholder="Search for items to add to your watchlist" oninput="watchlistSearch(this.value)" />
+                            </div>
+                        </div>
+                        <div class="row mt-4">
+                            <div class="col-sm-12" id="watchlistSearchResults">
+                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     `;
     return (array) ? html : '';
 }
 function homepageWatchlist(timeout){
-    var timeout = (typeof timeout !== 'undefined') ? timeout : activeInfo.settings.homepage.refresh.homepagePiholeRefresh;
     organizrAPI('POST','api/?v1/homepage/connect',{action:'getWatchlist'}).success(function(data) {
         try {
             var response = JSON.parse(data);
@@ -6947,9 +7033,6 @@ function homepageWatchlist(timeout){
     }).fail(function(xhr) {
         console.error("Organizr Function: API Connection Failed");
     });
-    var timeoutTitle = 'Watchlist-Homepage';
-    if(typeof timeouts[timeoutTitle] !== 'undefined'){ clearTimeout(timeouts[timeoutTitle]); }
-    timeouts[timeoutTitle] = setTimeout(function(){ homepageWatchlist(timeout); }, timeout);
 }
 // Thanks Swifty!
 function PopupCenter(url, title, w, h) {
