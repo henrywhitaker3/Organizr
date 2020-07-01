@@ -2583,23 +2583,22 @@ function userMenu(user){
 function menuExtras(active){
     var supportFrame = buildFrameContainer('Organizr Support','https://organizr.app/support',1);
     var docsFrame = buildFrameContainer('Organizr Docs','https://docs.organizr.app',1);
-    var adminMenu = (activeInfo.user.groupID <= 1 && activeInfo.settings.menuLink.githubMenuLink) ? buildMenuList('GitHub Repo','https://github.com/causefx/organizr',2,'fontawesome::github') : '';
+    var adminMenu = '<li class="devider"></li>';
+    adminMenu += (activeInfo.user.groupID <= 1 && activeInfo.settings.menuLink.githubMenuLink) ? buildMenuList('GitHub Repo','https://github.com/causefx/organizr',2,'fontawesome::github') : '';
     adminMenu += (activeInfo.user.groupID <= 1 && activeInfo.settings.menuLink.organizrSupportMenuLink) ? buildMenuList('Organizr Support','https://organizr.app/support',1,'fontawesome::life-ring') : '';
     adminMenu += (activeInfo.user.groupID <= 1 && activeInfo.settings.menuLink.organizrDocsMenuLink) ? buildMenuList('Organizr Docs','https://docs.organizr.app',1,'simpleline::docs') : '';
-
     $(supportFrame).appendTo($('.iFrame-listing'));
     $(docsFrame).appendTo($('.iFrame-listing'));
 	if(active === true){
-		return `
+		return (activeInfo.settings.menuLink.organizrSignoutMenuLink) ? `
 			<li class="devider"></li>
 			<li id="sign-out"><a class="waves-effect" onclick="logout();"><i class="fa fa-sign-out fa-fw"></i> <span class="hide-menu" lang="en">Logout</span></a></li>
-			<li class="devider"></li>
-		`+adminMenu;
+		` + adminMenu : '' + adminMenu;
 	}else{
-		return `
+		return (activeInfo.settings.menuLink.organizrSignoutMenuLink) ? `
 			<li class="devider"></li>
 			<li id="menu-login"><a class="waves-effect show-login" href="javascript:void(0)"><i class="mdi mdi-login fa-fw"></i> <span class="hide-menu" lang="en">Login/Register</span></a></li>
-		`;
+		` : '';
 	}
 }
 function categoryProcess(arrayItems){
@@ -2799,7 +2798,7 @@ function buildSplashScreen(json){
         <section id="splashScreen" class="lock-screen splash-screen fade in">
             <div class="row p-20 flexbox">`+items+`</div>
             <div class="row p-20 p-t-0 flexbox">
-                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12 mouse hvr-wobble-bottom" onclick="$('.splash-screen').addClass('hidden').removeClass('in')">
+                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 col-xl-12 mouse hvr-wobble-bottom bottom-close-splash" onclick="$('.splash-screen').addClass('hidden').removeClass('in')">
                     <div class="homepage-drag fc-event bg-danger lazyload"  data-src="">
                         <span class="homepage-text">&nbsp; Close Splash</span>
                     </div>
@@ -3306,7 +3305,10 @@ function newsLoad(){
         try {
             var response = JSON.parse(data);
             var items = [];
+            var limit = 5;
+            var count = 0;
             $.each(response, function(i,v) {
+                count++;
                 var newBody = `
                 <h5 class="pull-left">`+moment(v.date).format('LLL')+`</h5>
                 <h5 class="pull-right">`+v.author+`</h5>
@@ -3314,9 +3316,11 @@ function newsLoad(){
                 `+((v.subTitle) ? '<h5>' + v.subTitle + '</h5>' : '' )+`
                 <p>`+v.body+`</p>
                 `;
-                items[i] = {
-                    title:v.title,
-                    body:newBody
+                if(count <= limit){
+                    items[i] = {
+                        title:v.title,
+                        body:newBody
+                    }
                 }
             });
             var body = buildAccordion(items, true);
@@ -7046,7 +7050,7 @@ var html = `
         <div class="white-box text-white p-0">
             <!-- Tabstyle start -->
             <section class="">
-                <div class="sttabs tabs-style-iconbox">
+                <div class="sttabs sttabs-main-weather-health-div tabs-style-iconbox">
                     <nav>
                         <ul>${healthHeader}</ul>
                     </nav>
@@ -7060,7 +7064,7 @@ var html = `
     </div>
     <script>
         (function() {
-            [].slice.call(document.querySelectorAll('.sttabs')).forEach(function(el) {
+            [].slice.call(document.querySelectorAll('.sttabs-main-weather-health-div')).forEach(function(el) {
                 new CBPFWTabs(el);
             });
         })();
@@ -7088,7 +7092,7 @@ function buildPollutant(array){
         <div class="white-box text-white p-0">
             <!-- Tabstyle start -->
             <section class="">
-                <div class="sttabs tabs-style-iconbox">
+                <div class="sttabs sttabs-main-weather-pollutant-div tabs-style-iconbox">
                     <nav>
                         <ul>${pollutantHeader}</ul>
                     </nav>
@@ -7102,7 +7106,7 @@ function buildPollutant(array){
     </div>
     <script>
         (function() {
-            [].slice.call(document.querySelectorAll('.sttabs')).forEach(function(el) {
+            [].slice.call(document.querySelectorAll('.sttabs-main-weather-pollutant-div')).forEach(function(el) {
                 new CBPFWTabs(el);
             });
         })();
@@ -8135,15 +8139,21 @@ function youtubeSearch(searchQuery) {
 function youtubeCheck(title,link){
 	youtubeSearch(title).success(function(data) {
         var response = JSON.parse(data);
-		inlineLoad();
-		var id = response.data.items["0"].id.videoId;
-		var div = `
+        console.log(data)
+		if(response.data){
+			inlineLoad();
+			var id = response.data.items["0"].id.videoId;
+			var div = `
 		<div id="player-`+link+`" data-plyr-provider="youtube" data-plyr-embed-id="`+id+`"></div>
 		<div class="clearfix"></div>
 		`;
-		$('.youtube-div').html(div);
-		$('.'+link).trigger('click');
-		player = new Plyr('#player-'+link);
+			$('.youtube-div').html(div);
+			$('.'+link).trigger('click');
+			player = new Plyr('#player-'+link);
+		}else{
+			messageSingle('API Limit Reached','YouTube API Error',activeInfo.settings.notifications.position,'#FFF','error','5000');
+		}
+
 	}).fail(function(xhr) {
 		console.error("Organizr Function: YouTube Connection Failed");
 	});

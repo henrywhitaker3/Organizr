@@ -135,7 +135,8 @@ function organizrSpecialSettings()
 		'menuLink' => array(
 			'githubMenuLink' => $GLOBALS['githubMenuLink'],
 			'organizrSupportMenuLink' => $GLOBALS['organizrSupportMenuLink'],
-			'organizrDocsMenuLink' => $GLOBALS['organizrDocsMenuLink']
+			'organizrDocsMenuLink' => $GLOBALS['organizrDocsMenuLink'],
+			'organizrSignoutMenuLink' => $GLOBALS['organizrSignoutMenuLink']
 		)
 	);
 }
@@ -688,6 +689,22 @@ function getSettingsMain()
 				'class' => 'ldapAuth switchAuth',
 				'label' => 'Account DN',
 				'html' => '<span id="accountDN" class="ldapAuth switchAuth">' . $GLOBALS['authBackendHostPrefix'] . 'TestAcct' . $GLOBALS['authBackendHostSuffix'] . '</span>'
+			),
+			array(
+				'type' => 'switch',
+				'name' => 'ldapSSL',
+				'class' => 'ldapAuth switchAuth',
+				'label' => 'Enable LDAP SSL',
+				'value' => $GLOBALS['ldapSSL'],
+				'help' => 'This will enable the use of SSL for LDAP connections'
+			),
+			array(
+				'type' => 'switch',
+				'name' => 'ldapSSL',
+				'class' => 'ldapAuth switchAuth',
+				'label' => 'Enable LDAP TLS',
+				'value' => $GLOBALS['ldapTLS'],
+				'help' => 'This will enable the use of TLS for LDAP connections'
 			),
 			array(
 				'type' => 'button',
@@ -1264,6 +1281,12 @@ function getCustomizeAppearance()
 					'value' => $GLOBALS['organizrDocsMenuLink']
 				),
 				array(
+					'type' => 'switch',
+					'name' => 'organizrSignoutMenuLink',
+					'label' => 'Show Organizr Sign out & in Button on Sidebar',
+					'value' => $GLOBALS['organizrSignoutMenuLink']
+				),
+				array(
 					'type' => 'select',
 					'name' => 'unsortedTabs',
 					'label' => 'Unsorted Tab Placement',
@@ -1777,18 +1800,18 @@ function showLogin()
 
 function checkoAuth()
 {
-	return ($GLOBALS['plexoAuth'] && $GLOBALS['authType'] !== 'internal') ? true : false;
+	return ($GLOBALS['plexoAuth'] && $GLOBALS['authBackend'] == 'plex' && $GLOBALS['authType'] !== 'internal') ? true : false;
 }
 
 function checkoAuthOnly()
 {
-	return ($GLOBALS['plexoAuth'] && $GLOBALS['authType'] == 'external') ? true : false;
+	return ($GLOBALS['plexoAuth'] && $GLOBALS['authBackend'] == 'plex' && $GLOBALS['authType'] == 'external') ? true : false;
 }
 
 function showoAuth()
 {
 	$buttons = '';
-	if ($GLOBALS['plexoAuth'] && $GLOBALS['authType'] !== 'internal') {
+	if ($GLOBALS['plexoAuth'] && $GLOBALS['authBackend'] == 'plex' && $GLOBALS['authType'] !== 'internal') {
 		$buttons .= '<a href="javascript:void(0)" onclick="oAuthStart(\'plex\')" class="btn btn-lg btn-block text-uppercase waves-effect waves-light bg-plex text-muted" data-toggle="tooltip" title="" data-original-title="Login with Plex"> <span>Login</span><i aria-hidden="true" class="mdi mdi-plex m-l-5"></i> </a>';
 	}
 	return ($buttons) ? '

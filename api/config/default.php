@@ -8,6 +8,8 @@ return array(
 	'authBackendHostSuffix' => '',
 	'ldapBindUsername' => '',
 	'ldapBindPassword' => '',
+	'ldapSSL' => false,
+	'ldapTLS' => false,
 	'authBaseDN' => '',
 	'authBackendDomain' => '',
 	'ldapType' => '1',
@@ -387,5 +389,6 @@ return array(
 	}',
 	'githubMenuLink' => true,
 	'organizrSupportMenuLink' => true,
-	'organizrDocsMenuLink' => true
+	'organizrDocsMenuLink' => true,
+	'organizrSignoutMenuLink' => true
 );
